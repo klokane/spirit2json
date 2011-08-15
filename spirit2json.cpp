@@ -55,7 +55,7 @@ public:
 		++accumulated;
 	}
 
-	void operator() (std::wstring &str) const {
+	void operator() (std::string &str) const {
 		++strings;
 		++accumulated;
 	}
@@ -83,13 +83,13 @@ void get_stats(unsigned int &accumulated,
  */
 class printer : public boost::static_visitor<> {
 	const unsigned int level;
-	std::wostream& out;
+	std::ostream& out;
 
 public:
-	printer(std::wostream& out, unsigned int level = 0) : level(level), out(out) {}
+	printer(std::ostream& out, unsigned int level = 0) : level(level), out(out) {}
 
-	std::wstring indent(unsigned int l) const {
-		return std::wstring(l * 4, ' ');
+	std::string indent(unsigned int l) const {
+		return std::string(l * 4, ' ');
 	}
 
 	void operator()(JSONNull&) const {
@@ -126,7 +126,7 @@ public:
 		out << (b ? "true" : "false");
 	}
 
-	void operator() (std::wstring &str) const {
+	void operator() (std::string &str) const {
 		out << "\"" << str << "\"";
 	}
 
@@ -151,11 +151,13 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 		using standard_wide::char_;
 		using namespace qi::labels;
 
-		str = '"' > *(("\\u" > uint_parser<unsigned, 16, 4, 4>() ) |
-					   ('\\' > escaped_char) |
-					   (char_ - char_(L'\x0000', L'\x001F') - '"')
-					  )
-			> '"';
+		str %= lexeme['"' > 
+			*(
+				("\\u" > uint_parser<unsigned, 16, 4, 4>() ) |
+				('\\' > escaped_char) |
+				(char_ - '"' - char_(L'\x0000', L'\x001F'))
+			 )
+			> '"'];
 
 		val %= str | bool_ | double_ | null | arr | obj;
 		arr %= '[' > -(val % ',') > ']';
@@ -171,7 +173,7 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 				("n", '\n')
 				("r", '\r')
 				("t", '\t');
-		escaped_char.name("Escape character");
+		//escaped_char.name("Escape character");
 
 		val.name("Value");
 		arr.name("Array");
@@ -196,20 +198,20 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 	qi::rule<Iterator, JSONArray(), qi::space_type> arr;
 	qi::rule<Iterator, JSONObject(), qi::space_type> obj;
 
-	qi::rule<Iterator, std::wstring()> str;
+	qi::rule<Iterator, std::string(), qi::space_type> str;
 	qi::symbols<char const, char const> escaped_char;
 
 	qi::rule<Iterator, JSONNull(), qi::space_type> null;
 
-	qi::rule<Iterator, std::pair<std::wstring, JSONValue>(), qi::space_type> pair;
+	qi::rule<Iterator, std::pair<std::string, JSONValue>(), qi::space_type> pair;
 };
 
-JSONValue parse(std::wstring str) {
+JSONValue parse(std::string str) {
 	JSONValue result;
-	std::wstring::const_iterator iter = str.begin();
-	std::wstring::const_iterator end = str.end();
+	std::string::const_iterator iter = str.begin();
+	std::string::const_iterator end = str.end();
 
-	bool r = qi::phrase_parse(iter, end, json_grammar<std::wstring::const_iterator>(), qi::space, result);
+	bool r = qi::phrase_parse(iter, end, json_grammar<std::string::const_iterator>(), qi::space, result);
 	//TODO: Implement this right
 	if (!r || iter != str.end()) {
 		throw ParsingFailed();
@@ -220,18 +222,18 @@ JSONValue parse(std::wstring str) {
 
 }
 
-std::wostream& operator<<(std::wostream& output, spirit2json::JSONValue& val) {
+std::ostream& operator<<(std::ostream& output, spirit2json::JSONValue& val) {
 	boost::apply_visitor(spirit2json::printer(output), val);
 	return output;
 }
 
-std::wostream& operator<<(std::wostream& output, spirit2json::JSONArray& arr) {
+std::ostream& operator<<(std::ostream& output, spirit2json::JSONArray& arr) {
 	spirit2json::JSONValue val = spirit2json::JSONValue(arr);
 	boost::apply_visitor(spirit2json::printer(output), val);
 	return output;
 }
 
-std::wostream& operator<<(std::wostream& output, spirit2json::JSONObject& map) {
+std::ostream& operator<<(std::ostream& output, spirit2json::JSONObject& map) {
 	spirit2json::JSONValue val = spirit2json::JSONValue(map);
 	boost::apply_visitor(spirit2json::printer(output), val);
 	return output;

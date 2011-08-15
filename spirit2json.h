@@ -33,15 +33,15 @@ typedef std::nullptr_t JSONNull;
 #endif
 
 typedef boost::make_recursive_variant<
-	std::wstring,
+	std::string,
 	double,
 	bool,
 	JSONNull,
 	std::vector<boost::recursive_variant_ >,
-	std::map<std::wstring, boost::recursive_variant_ > >::type JSONValue;
+	std::map<std::string, boost::recursive_variant_ > >::type JSONValue;
 
 typedef std::vector<JSONValue> JSONArray;
-typedef std::map<std::wstring, JSONValue> JSONObject;
+typedef std::map<std::string, JSONValue> JSONObject;
 
 class Exception : public std::exception {
 	virtual const char* what() const throw() {
@@ -55,7 +55,7 @@ class ParsingFailed : public Exception {
 	}
 };
 
-JSONValue parse(std::wstring str);
+JSONValue parse(std::string str);
 
 void get_stats(unsigned int &accumulated, 
 			unsigned int &strings,
@@ -69,8 +69,8 @@ void get_stats(unsigned int &accumulated,
 
 }
 
-std::wostream& operator<<(std::wostream& output, spirit2json::JSONValue& val);
-std::wostream& operator<<(std::wostream& output, spirit2json::JSONArray& arr);
-std::wostream& operator<<(std::wostream& output, spirit2json::JSONObject& obj);
+std::ostream& operator<<(std::ostream& output, spirit2json::JSONValue& val);
+std::ostream& operator<<(std::ostream& output, spirit2json::JSONArray& arr);
+std::ostream& operator<<(std::ostream& output, spirit2json::JSONObject& obj);
 
 #endif
