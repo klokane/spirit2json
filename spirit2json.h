@@ -34,6 +34,7 @@ typedef std::nullptr_t JSONNull;
 
 typedef boost::make_recursive_variant<
 	std::string,
+	long,
 	double,
 	bool,
 	JSONNull,
@@ -64,6 +65,7 @@ void get_stats(unsigned int &accumulated,
 			unsigned int &bools,
 			unsigned int &nulls,
 			unsigned int &doubles,
+			unsigned int &longs,
 			JSONValue &val);
 
 

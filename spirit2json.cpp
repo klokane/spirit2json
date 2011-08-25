@@ -2,6 +2,7 @@
 #include <boost/spirit/include/qi.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/fusion/include/std_pair.hpp>
+#include <boost/spirit/include/qi_numeric.hpp>
 
 #include "spirit2json.h"
 
@@ -15,6 +16,7 @@ class counter : public boost::static_visitor<> {
 	unsigned int &bools;
 	unsigned int &nulls;
 	unsigned int &doubles;
+	unsigned int &longs;
 public:
 	counter(unsigned int &accumulated, 
 			unsigned int &strings,
@@ -22,9 +24,10 @@ public:
 			unsigned int &arrays,
 			unsigned int &bools,
 			unsigned int &nulls,
-			unsigned int &doubles) : accumulated(accumulated),
+			unsigned int &doubles,
+			unsigned int &longs) : accumulated(accumulated),
 	strings(strings), objects(objects), arrays(arrays), bools(bools),
-	nulls(nulls), doubles(doubles) {}
+	nulls(nulls), doubles(doubles), longs(longs) {}
 
 	void operator()(JSONNull&) const {
 		++accumulated;
@@ -65,6 +68,11 @@ public:
 		++doubles;
 	}
 
+	void operator() (long &l) const {
+		++accumulated;
+		++longs;
+	}
+
 };
 
 void get_stats(unsigned int &accumulated, 
@@ -74,8 +82,9 @@ void get_stats(unsigned int &accumulated,
 			unsigned int &bools,
 			unsigned int &nulls,
 			unsigned int &doubles,
+			unsigned int &longs,
 			JSONValue &val) {
-				boost::apply_visitor( counter(accumulated, strings, objects, arrays, bools, nulls, doubles), val);
+				boost::apply_visitor( counter(accumulated, strings, objects, arrays, bools, nulls, doubles, longs), val);
 }
 
 /**
@@ -148,6 +157,8 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 		using qi::lexeme;
 		using qi::_val;
 		using qi::uint_parser;
+		using qi::real_parser;
+		using qi::strict_real_policies;
 		using standard_wide::char_;
 		using namespace qi::labels;
 
@@ -159,7 +170,10 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 			 )
 			> '"'];
 
-		val %= str | bool_ | double_ | null | arr | obj;
+		number %= real_parser<double,strict_real_policies<double> >() |
+		       long_;	
+
+		val %= str | bool_ | number | null | arr | obj;
 		arr %= '[' > -(val % ',') > ']';
 		obj %= '{' > -(pair % ',') > '}';
 		null = lit("null")	[_val = nullptr];
@@ -199,6 +213,7 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 	qi::rule<Iterator, JSONObject(), qi::space_type> obj;
 
 	qi::rule<Iterator, std::string(), qi::space_type> str;
+	qi::rule<Iterator, JSONValue(), qi::space_type> number;
 	qi::symbols<char const, char const> escaped_char;
 
 	qi::rule<Iterator, JSONNull(), qi::space_type> null;
