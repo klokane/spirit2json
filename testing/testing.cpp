@@ -11,14 +11,19 @@ using boost::get;
 	Tests for Number
 */
 BOOST_AUTO_TEST_CASE(number_basic_usage) {
+
 	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("42.0"))), 42.0);
-	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("-5"))), -5.);
-	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("42"))), 42.);
-	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("42"))), 42);
+	BOOST_CHECK_EQUAL(get<long>(JSONValue(parse("-5"))), -5);
+	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("42."))), 42.);
+	BOOST_CHECK_EQUAL(get<long>(JSONValue(parse("42"))), 42);
 	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("1234567890.09876"))), 1234567890.09876);
 	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("-1234567890.12345"))), -1234567890.12345);
+	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("42e1"))), 420);
+	BOOST_CHECK_EQUAL(get<double>(JSONValue(parse("4.2e1"))), 42.0);
 
 	BOOST_CHECK_THROW(parse("123.123.123"), ParsingFailed);
+	BOOST_CHECK_THROW(get<long>(JSONValue(parse("42."))), boost::bad_get);
+	BOOST_CHECK_THROW(get<double>(JSONValue(parse("42e"))), ParsingFailed);
 }
 
 
@@ -158,11 +163,15 @@ BOOST_AUTO_TEST_CASE(object_basic_usage) {
 	obj.insert(JSONObject::value_type("test", 0.5));
 	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":0.5}"));
 
+
 	obj.insert(JSONObject::value_type("other", JSONArray()));
 	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":0.5,\"other\":[]}"));
 
 	obj.insert(JSONObject::value_type("NULL", nullptr));
 	BOOST_CHECK(JSONValue(obj) == parse(" { \"test\" :0.5,\n\t\t\"other\"  \t\n:[],  \"NULL\":null}"));
+
+	//obj.insert(JSONObject::value_type("int", 3));
+	//BOOST_CHECK(JSONValue(obj) == parse(" { \"test\" :0.5,\n\t\t\"other\"  \t\n:[],  \"NULL\":null, \"int\":3} "));
 
 	BOOST_CHECK_THROW(parse("{:}"), ParsingFailed);
 }
@@ -171,10 +180,11 @@ BOOST_AUTO_TEST_CASE(use_operators) {
 	JSONObject obj;
 	BOOST_CHECK(JSONValue(obj) == parse("{}"));
 
-	obj["test"] = 0.5;
-	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":0.5}"));
+	obj["test"] = 5L;
+	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":5}"));
+
 	obj["arr"] = JSONArray();
-	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":0.5, \"arr\" : []}"));
+	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":5, \"arr\" : []}"));
 }
 
 
@@ -187,4 +197,27 @@ BOOST_AUTO_TEST_CASE(misc) {
 	BOOST_CHECK_THROW(parse("]"), ParsingFailed);
 	BOOST_CHECK_THROW(parse(","), ParsingFailed);
 }
+
+BOOST_AUTO_TEST_CASE(array_access) {
+	JSONArray a = get<JSONArray>(parse("[ \"a\", 1, 2 ]"));
+	BOOST_CHECK_EQUAL(a.size(),3);
+	BOOST_CHECK_EQUAL(get<long>(a[1]),1);
+
+	a.push_back((long)3);
+	BOOST_CHECK_EQUAL(a.size(),4);
+	BOOST_CHECK(a == get<JSONArray>(parse("[ \"a\", 1, 2, 3 ]")));
+
+	a.push_back(JSONObject());
+	BOOST_CHECK(a == get<JSONArray>(parse("[ \"a\", 1, 2, 3, {} ]")));
+
+	a[2] = 4L;
+	BOOST_CHECK(a == get<JSONArray>(parse("[ \"a\", 1, 4, 3, {} ]")));
+
+	a[2] = std::string("aaa");
+	BOOST_CHECK(JSONValue(a) == (parse("[ \"a\", 1, \"aaa\", 3, {} ]")));
+
+	get<JSONObject>(a[4])["test"] = .3;
+	BOOST_CHECK(JSONValue(a) == (parse("[ \"a\", 1, \"aaa\", 3, { \"test\" : 0.3 } ]")));
+}
+
 
