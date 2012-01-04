@@ -96,22 +96,7 @@ BOOST_AUTO_TEST_CASE(boolean_basic_usage) {
 	Tests for null
 */
 BOOST_AUTO_TEST_CASE(null_basic_usage) {
-#ifndef _WIN32 // Doesn't work with vs2010 sp1
-	BOOST_CHECK(get<JSONNull>(JSONValue(parse("null"))) == nullptr);
-#else
-	JSONValue val(parse("null"));
-	//TODO: Figure out how to do this in a nice way
-	unsigned int accumulated = 0;
-	unsigned int strings = 0;
-	unsigned int objects = 0;
-	unsigned int arrays = 0;
-	unsigned int bools = 0;
-	unsigned int nulls = 0;
-	unsigned int doubles = 0;
-	get_stats(accumulated, strings, objects, arrays, bools, nulls, doubles, val);
-	BOOST_CHECK((nulls == 1) && (accumulated == 1));
-	
-#endif
+	BOOST_CHECK(JSONValue(parse("null")).which() == 4);
 
 	// Make sure we don't accept anything used in other languages
 	BOOST_CHECK_THROW(parse("nil"), ParsingFailed);
@@ -149,24 +134,24 @@ BOOST_AUTO_TEST_CASE(object_basic_usage) {
 
 	{
 		JSONObject o;
-		o.insert(JSONObject::value_type("NULL", nullptr));
+		o.insert(JSONPair("NULL", nullptr));
 		BOOST_CHECK(JSONValue(o) == parse("{\"NULL\":null}"));
 	}
 
 	{
 		JSONObject o;
-		o.insert(JSONObject::value_type("other", JSONArray()));
+		o.insert(JSONPair("other", JSONArray()));
 		BOOST_CHECK(JSONValue(o) == parse("{\"other\":[]}"));
 	}
 
-	obj.insert(JSONObject::value_type("test", 0.5));
+	obj.insert(JSONPair("test", 0.5));
 	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":0.5}"));
 
 
-	obj.insert(JSONObject::value_type("other", JSONArray()));
+	obj.insert(JSONPair("other", JSONArray()));
 	BOOST_CHECK(JSONValue(obj) == parse("{\"test\":0.5,\"other\":[]}"));
 
-	obj.insert(JSONObject::value_type("NULL", nullptr));
+	obj.insert(JSONPair("NULL", nullptr));
 	BOOST_CHECK(JSONValue(obj) == parse(" { \"test\" :0.5,\n\t\t\"other\"  \t\n:[],  \"NULL\":null}"));
 
 	//obj.insert(JSONObject::value_type("int", 3));
