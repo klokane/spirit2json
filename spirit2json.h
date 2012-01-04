@@ -61,7 +61,7 @@ class ParsingFailed : public Exception {
 	}
 };
 
-JSONValue parse(std::string str);
+JSONValue parse(const std::string& str);
 
 }
 

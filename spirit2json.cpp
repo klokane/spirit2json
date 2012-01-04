@@ -142,7 +142,7 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 	qi::rule<Iterator, std::pair<std::string, JSONValue>(), qi::space_type> pair;
 };
 
-JSONValue parse(std::string str) {
+JSONValue parse(const std::string& str) {
 	JSONValue result;
 	std::string::const_iterator iter = str.begin();
 	std::string::const_iterator end = str.end();
