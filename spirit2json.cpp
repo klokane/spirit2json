@@ -22,13 +22,13 @@ public:
 		return std::string(l * 4, ' ');
 	}
 
-	void operator()(JSONNull&) const {
+	void operator()(const JSONNull&) const {
 		out << "null";
 	}
 
-	void operator()(JSONArray &arr) const {
+	void operator()(const JSONArray& arr) const {
 		out << "[" << std::endl;
-		for (JSONArray::iterator it = arr.begin(); it != arr.end(); ++it) {
+		for (JSONArray::const_iterator it = arr.begin(); it != arr.end(); ++it) {
 			if (it != arr.begin())
 				out << "," << std::endl;
 
@@ -39,9 +39,9 @@ public:
 
 	}
 
-	void operator()(JSONObject &obj) const {
+	void operator()(const JSONObject& obj) const {
 		out << "{" << std::endl;
-		for (JSONObject::iterator it = obj.begin(); it != obj.end(); ++it) {
+		for (JSONObject::const_iterator it = obj.begin(); it != obj.end(); ++it) {
 			if (it != obj.begin())
 				out << ',' << std::endl;
 
@@ -52,16 +52,16 @@ public:
 
 	}
 
-	void operator() (bool &b) const {
+	void operator() (const bool& b) const {
 		out << (b ? "true" : "false");
 	}
 
-	void operator() (std::string &str) const {
+	void operator() (const JSONString& str) const {
 		out << "\"" << str << "\"";
 	}
 
 	template <typename T>
-	void operator() (T &t) const {
+	void operator() (const T& t) const {
 		out << t;
 	}
 
@@ -142,7 +142,7 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 	qi::rule<Iterator, std::pair<std::string, JSONValue>(), qi::space_type> pair;
 };
 
-JSONValue parse(const std::string& str) {
+JSONValue parse(const JSONString& str) {
 	JSONValue result;
 	std::string::const_iterator iter = str.begin();
 	std::string::const_iterator end = str.end();
@@ -156,20 +156,26 @@ JSONValue parse(const std::string& str) {
 	return result;
 }
 
+JSONString generate(const JSONValue& val) {
+  std::stringstream ss;
+	boost::apply_visitor(spirit2json::printer(ss), val);
+  return ss.str();
 }
 
-std::ostream& operator<<(std::ostream& output, spirit2json::JSONValue& val) {
+}
+
+std::ostream& operator<<(std::ostream& output, const spirit2json::JSONValue& val) {
 	boost::apply_visitor(spirit2json::printer(output), val);
 	return output;
 }
 
-std::ostream& operator<<(std::ostream& output, spirit2json::JSONArray& arr) {
+std::ostream& operator<<(std::ostream& output, const spirit2json::JSONArray& arr) {
 	spirit2json::JSONValue val = spirit2json::JSONValue(arr);
 	boost::apply_visitor(spirit2json::printer(output), val);
 	return output;
 }
 
-std::ostream& operator<<(std::ostream& output, spirit2json::JSONObject& map) {
+std::ostream& operator<<(std::ostream& output, const spirit2json::JSONObject& map) {
 	spirit2json::JSONValue val = spirit2json::JSONValue(map);
 	boost::apply_visitor(spirit2json::printer(output), val);
 	return output;
