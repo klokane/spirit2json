@@ -1,7 +1,6 @@
 #ifndef SPIRIT2JSON_H
 #define SPIRIT2JSON_H
 
-#include "StdAfx.h"
 #include <string>
 #include <stdexcept>
 #include <ostream>
@@ -57,17 +56,6 @@ class ParsingFailed : public Exception {
 };
 
 JSONValue parse(std::string str);
-
-void get_stats(unsigned int &accumulated, 
-			unsigned int &strings,
-			unsigned int &objects,
-			unsigned int &arrays,
-			unsigned int &bools,
-			unsigned int &nulls,
-			unsigned int &doubles,
-			unsigned int &longs,
-			JSONValue &val);
-
 
 }
 
