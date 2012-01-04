@@ -14,6 +14,17 @@ struct boost::recursive_variant_ {};
 
 namespace spirit2json {
 
+enum JSONValueTypes
+{
+  JSON_STRING, //!< JSONValue(JSONString()).which() value
+  JSON_LONG,   //!< JSONValue(JSONLong(0)).which() value
+  JSON_DOUBLE, //!< JSONValue(JSONDouble(0)).which() value
+  JSON_BOOL,   //!< JSONValue(JSONBool(false)).which() value
+  JSON_NULL,   //!< JSONValue(JSONNull()).which() value
+  JSON_ARRAY,  //!< JSONValue(JSONArray()).which() value
+  JSON_OBJECT  //!< JSONValue(JSONObject()).which() value
+};
+
 #if defined(BOOST_NO_NULLPTR)
 struct JSONNull {
 	bool operator==(const JSONNull&) const {

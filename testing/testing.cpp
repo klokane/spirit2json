@@ -6,6 +6,15 @@
 using namespace std;
 using namespace spirit2json;
 using boost::get;
+
+BOOST_AUTO_TEST_CASE(check_value_types) {
+  BOOST_CHECK_EQUAL(JSON_STRING, JSONValue(JSONString()).which());
+  BOOST_CHECK_EQUAL(JSON_LONG,  JSONValue(JSONLong(0)).which() );
+  BOOST_CHECK_EQUAL(JSON_DOUBLE, JSONValue(JSONDouble(0)).which());
+  BOOST_CHECK_EQUAL(JSON_BOOL,   JSONValue(JSONBool(false)).which());
+  BOOST_CHECK_EQUAL(JSON_NULL,   JSONValue(JSONNull()).which());
+  BOOST_CHECK_EQUAL(JSON_OBJECT, JSONValue(JSONObject()).which());
+};
 /*
 	Tests for Number
 */
