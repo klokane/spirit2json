@@ -31,17 +31,23 @@ static JSONNull nullptr = JSONNull();
 typedef std::nullptr_t JSONNull;
 #endif
 
+typedef std::string JSONString;
+typedef long JSONLong;
+typedef double JSONDouble;
+typedef bool JSONBool;
+
 typedef boost::make_recursive_variant<
-	std::string,
-	long,
-	double,
-	bool,
+	JSONString,
+	JSONLong,
+	JSONDouble,
+	JSONBool,
 	JSONNull,
 	std::vector<boost::recursive_variant_ >,
 	std::map<std::string, boost::recursive_variant_ > >::type JSONValue;
 
 typedef std::vector<JSONValue> JSONArray;
 typedef std::map<std::string, JSONValue> JSONObject;
+typedef JSONObject::value_type JSONPair;
 
 class Exception : public std::exception {
 	virtual const char* what() const throw() {
