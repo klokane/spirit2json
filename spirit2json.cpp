@@ -1,5 +1,6 @@
 #include <iostream>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/spirit/include/karma.hpp>
 #include <boost/spirit/include/phoenix.hpp>
 #include <boost/fusion/include/std_pair.hpp>
 #include <boost/spirit/include/qi_numeric.hpp>
@@ -7,6 +8,28 @@
 #include "spirit2json.h"
 
 namespace spirit2json {
+
+using namespace boost::spirit;
+
+template <typename Iterator>
+struct string_escape : karma::grammar<Iterator, std::string()> {
+  string_escape() : string_escape::base_type(esc_str) {
+    esc_char.add
+      ('\"',"\\\"")
+      ('\\',"\\\\")
+      ('\'',"\\\'")
+      ('\t',"\\t")
+      ('\r',"\\r")
+      ('\n',"\\n")
+      ('\f',"\\f")
+      ('\b',"\\b")
+      ('/',"\\/")
+      ;
+    esc_str = *(esc_char | karma::print);
+  }
+  karma::rule<Iterator, std::string()> esc_str;
+  karma::symbols<char, const char*> esc_char;
+};
 
 /**
  * Printer class used in implementation of << operator overloads
@@ -57,7 +80,13 @@ public:
 	}
 
 	void operator() (const JSONString& str) const {
-		out << "\"" << str << "\"";
+    typedef std::back_insert_iterator<std::string> sink_type;
+    std::string generated;
+    sink_type sink(generated);
+    string_escape<sink_type> g;
+
+    karma::generate(sink, g, str);
+    out << "\"" << generated << "\"";
 	}
 
 	template <typename T>
@@ -68,7 +97,6 @@ public:
 };
 
 
-using namespace boost::spirit;
 using namespace boost;
 
 template <typename Iterator>

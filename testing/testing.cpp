@@ -214,3 +214,15 @@ BOOST_AUTO_TEST_CASE(array_access) {
 }
 
 
+BOOST_AUTO_TEST_CASE(generator_basic){
+  BOOST_CHECK_EQUAL("\"aa\"",generate(JSONValue(JSONString("aa"))));
+  BOOST_CHECK_EQUAL("5",generate(JSONValue(JSONLong(5))));
+  BOOST_CHECK_EQUAL("5.1",generate(JSONValue(JSONDouble(5.1))));
+};
+
+BOOST_AUTO_TEST_CASE(generator_str_escape){
+	BOOST_CHECK_EQUAL("\"\\t \\r \\n \\f \\b \\/ \\\\ \\\"\"",generate(JSONValue(JSONString("\t \r \n \f \b / \\ \""))));
+
+//BOOST_CHECK(get<string>(JSONValue(parse("\"testing\\tescapes\\\"in\\rtext \"")))
+//			== "testing\tescapes\"in\rtext ");
+};
