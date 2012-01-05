@@ -161,7 +161,7 @@ struct json_grammar : qi::grammar<Iterator, JSONValue(), qi::space_type> {
 	qi::rule<Iterator, JSONArray(), qi::space_type> arr;
 	qi::rule<Iterator, JSONObject(), qi::space_type> obj;
 
-	qi::rule<Iterator, std::string(), qi::space_type> str;
+	qi::rule<Iterator, JSONString(), qi::space_type> str;
 	qi::rule<Iterator, JSONValue(), qi::space_type> number;
 	qi::symbols<char const, char const> escaped_char;
 
@@ -190,7 +190,7 @@ JSONString generate(const JSONValue& val) {
   return ss.str();
 }
 
-}
+} /* namespace spirit2json */
 
 std::ostream& operator<<(std::ostream& output, const spirit2json::JSONValue& val) {
 	boost::apply_visitor(spirit2json::printer(output), val);

@@ -77,8 +77,8 @@ JSONString generate(const JSONValue& val);
 
 }
 
-std::ostream& operator<<(std::ostream& output, spirit2json::JSONValue& val);
-std::ostream& operator<<(std::ostream& output, spirit2json::JSONArray& arr);
-std::ostream& operator<<(std::ostream& output, spirit2json::JSONObject& obj);
+std::ostream& operator<<(std::ostream& output, const spirit2json::JSONValue& val);
+std::ostream& operator<<(std::ostream& output, const spirit2json::JSONArray& arr);
+std::ostream& operator<<(std::ostream& output, const spirit2json::JSONObject& obj);
 
 #endif
